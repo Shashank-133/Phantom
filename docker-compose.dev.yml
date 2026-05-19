@@ -1,0 +1,70 @@
+# PHANTOM — DEV stack (infra only)
+#
+# Use this when developing the backend on the host with hot reload:
+#   docker compose -f docker-compose.dev.yml up -d
+#   cd backend && uvicorn main:app --reload
+#
+# This keeps RAM low on Windows by NOT running the backend / celery containers.
+# Postgres / Neo4j / Redis are reachable from the host on standard ports.
+
+services:
+  postgres:
+    image: postgres:15.5-alpine
+    container_name: phantom-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-phantom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-phantom_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-phantom}
+    ports:
+      - "5432:5432"
+    volumes:
+      - phantom_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-phantom} -d ${POSTGRES_DB:-phantom}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: phantom-neo4j-dev
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-phantom_dev_pw}
+      NEO4J_server_memory_heap_initial__size: 256M
+      NEO4J_server_memory_heap_max__size: 512M
+      NEO4J_server_memory_pagecache_size: 256M
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "7474:7474"  # HTTP browser
+      - "7687:7687"  # Bolt
+    volumes:
+      - phantom_neo4j_data:/data
+      - phantom_neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: phantom-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - phantom_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  phantom_pg_data:
+  phantom_neo4j_data:
+  phantom_neo4j_logs:
+  phantom_redis_data:

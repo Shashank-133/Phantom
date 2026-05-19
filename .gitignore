@@ -1,0 +1,63 @@
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# ML models (downloaded by download_models.py — too large for git)
+models/
+!models/.gitkeep
+
+# Node
+node_modules/
+.vite/
+dist/
+build/
+.npm/
+.yarn/
+*.log
+
+# Demo PDFs (generated at runtime)
+demo_data/pdfs/
+demo_data/cbs_corpus/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Docker volumes (if mounted locally)
+.docker-data/
+postgres-data/
+neo4j-data/
+redis-data/
+
+# Crypto keys (generated at first run)
+*.pem
+keys/
+
+# Logs
+*.log
+logs/
+
+# Local overrides
+docker-compose.override.yml
